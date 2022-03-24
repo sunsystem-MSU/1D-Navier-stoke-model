@@ -28,11 +28,8 @@ class NS_self(NonlinearProblem):
 #mesh = Mesh()
 #mesh_xdmf.read(mesh)
 
-ele=4
+ele=4 #Number of elements
 mesh=IntervalMesh(ele,0,1.26)
-
-#mesh1=IntervalMesh(4,0,1.26)
-
 
 #define points
 mesh_points=mesh.coordinates()
@@ -52,7 +49,9 @@ with open('Pin_com_carotid.txt') as f:
 Pin = np.asfarray(Pin,float)
 Pin = Pin*7.5
 
-##########################
+
+
+########################## Read Input data
 
 Pout=[]
 with open('Pout_com_carotid.txt') as f:
@@ -68,10 +67,10 @@ with open('Qout_com_carotid.txt') as f:
 
         Qout.append([elt.strip() for elt in line.split(',')])
 Qout = np.asfarray(Qout,float)
+###########
 
 
-
-
+# Define the timesteps for based on the size of input data
 size=np.shape(Qout)[0]
 
 
@@ -84,27 +83,18 @@ size=np.shape(Qout)[0]
 
 
 
-
+# CG 1 function space
 
 P1 = FiniteElement("CG", mesh.ufl_cell(), 1)
 P2 = VectorElement("CG", mesh.ufl_cell(), 1)
 
-#P3 = FunctionSpace(mesh, 'CG', 1)
-#P4 = VectorFunctionSpace(mesh, 'CG', 1)
-
 W = FunctionSpace(mesh, P1*P1)
 
-
-
-#P3 = FiniteElement("CG", mesh1.ufl_cell(), 1)
-#velocity_fun=FunctionSpace(mesh1, P3)
-# Input data
-
+# delta t
 dt=1.1/size
 
 
 # Boundaries
-
 def uL_boundary(x, on_boundary):
     tol = 1e-14
     return on_boundary and near(x[0], 0, tol) 
@@ -118,30 +108,29 @@ def uR_boundary(x, on_boundary):
 
 
 
-
+# Constant parameters
 E=5250.43 #mmHg
 
 h=0.3 #mm
 
 beta=4/3*(np.sqrt(np.pi)*E*h)
 
-rho=0.00106
+rho=0.00106 # blood density g/mm^3
 
-rref=3
+rref=3 # reference radius mm
 
-Aref= np.pi*rref**2
+Aref= np.pi*rref**2 #reference Area mm^2
 
-Kr=1.0
 
-Pext=0
+Pext=0 # external pressure mmHg
 
-Pd=82.0042321
+Pd=82.0042321 # diastolic pressure mmHg
 
-Ad=Aref
+Ad=Aref # diastolic area 
 
-ci=2
+ci=2 #radial coordinate
 
-mu=0.0000300024630338264
+mu=0.0000300024630338264 #blood viscosity
 
 '''
 E=700
@@ -341,13 +330,13 @@ for i in range(0,total_step):
 
     #test1 = FunctionSpace(mesh, P1)
 
-    a_P1 = project(a1, test)
+    a_P1 = project(a1, test) #project area to nodes
     a_nodal_values = a_P1.vector()[:]
     print(a_nodal_values)
     print(np.shape(a_nodal_values))
     
     
-    q_P1 = project(a2, test)
+    q_P1 = project(a2, test) #project flowrate to nodes
     q_nodal_values = q_P1.vector()[:]
     print(q_nodal_values)
     print(np.shape(q_nodal_values))
