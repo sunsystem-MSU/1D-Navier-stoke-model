@@ -13,6 +13,6 @@ docker run -ti quay.io/fenicsproject/stable:latest
 '''
 
 Then locate the folder you store script
-# use python3 to run the code
+# use python3 to run the code 1_vessel_benchmark_NS51.py
 
 
